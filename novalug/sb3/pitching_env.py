@@ -11,17 +11,19 @@ class PitchingEnv(gym.Env):
 
     def __init__(self, pitcher_skill, batters, defense_skill, innings=9):
         super().__init__()
-        pitch_intent = [
+        pitch_intents = [
+            0,  # "Strike",
             0,  # "Strike",
             1,  # "Ball",
         ]
-        N_DISCRETE_ACTIONS = len(pitcher_skill) * len(pitch_intent)
+        N_DISCRETE_ACTIONS = len(pitcher_skill) * len(pitch_intents)
         self.action_space = spaces.Discrete(N_DISCRETE_ACTIONS)
         # max values for the observation space
         max_pitch_count = 999
-        runs = 999
-        outs = 3
+        max_runs = 999
         batters_count = len(batters)
+        # defined by the rules of baseball
+        outs = 3
         balls = 4
         strikes = 3
         runner_on_first = 2  # boolean
@@ -30,7 +32,7 @@ class PitchingEnv(gym.Env):
         pitch_skills = [10] * len(pitcher_skill)
         batters_skills = [10] * len(batters)
         discrete_array = (
-            [innings, runs, outs, max_pitch_count]
+            [innings, max_runs, outs, max_pitch_count]
             + pitch_skills
             + [batters_count]
             + batters_skills
@@ -48,6 +50,8 @@ class PitchingEnv(gym.Env):
         self._batters = batters
         self._pitcher_skill = pitcher_skill
         self._defense_skill = defense_skill
+        self._pitch_intents = pitch_intents
+        self._max_runs = max_runs
         self.set_initial_values()
 
     def step(self, action):
@@ -57,7 +61,7 @@ class PitchingEnv(gym.Env):
         observation = self.get_obs()
         info = self.get_info()
         terminated = (
-            self._current_runs >= 999
+            self._current_runs >= self._max_runs
             or self._current_inning >= self._innings
             or (self._current_inning >= self._innings and self._current_outs >= 3)
         )
@@ -117,11 +121,11 @@ class PitchingEnv(gym.Env):
         self._current_batter = 0
 
     def calculate_reward(self, action):
-        pitcher_tried_to_throw_a_strike = action % 2 == 0
+        pitcher_tried_to_throw_a_ball = action % len(self._pitch_intents) == 0
         if action <= 0:
             pitcher_skill_index = 0
         else:
-            pitcher_skill_index = int(action) // 2
+            pitcher_skill_index = int(action) // len(self._pitch_intents)
         pitcher_skill_at_pitch = self._pitcher_skill[pitcher_skill_index]
         batter_skill = self._batters[self._current_batter]
         defense_skill = self._defense_skill
@@ -131,7 +135,7 @@ class PitchingEnv(gym.Env):
         # 1 is a strike
         # 2 is an out on a ball in play
 
-        if pitcher_tried_to_throw_a_strike:
+        if pitcher_tried_to_throw_a_ball:
             hit_chances = [-1] * batter_skill
             ball_chances = [0] * (10 - pitcher_skill_at_pitch)
             strike_chances = [1] * pitcher_skill_at_pitch
@@ -139,7 +143,7 @@ class PitchingEnv(gym.Env):
         else:
             hit_chances = [-1] * batter_skill
             # since a ball was thrown, the batter has a lower chance of hitting
-            half_length = len(hit_chances) // 2
+            half_length = len(hit_chances) // 4
             hit_chances = hit_chances[:half_length]
             ball_chances = [0] * pitcher_skill_at_pitch
             strike_chances = [1] * (10 - pitcher_skill_at_pitch)
@@ -238,37 +242,27 @@ class PitchingEnv(gym.Env):
         )
 
     def action_description(self, action):
-        if action == 0:
-            return "Fastball - Ball"
-        elif action == 1:
-            return "Fastball - Strike"
-        elif action == 2:
-            return "Curveball - Ball"
-        elif action == 3:
-            return "Curveball - Strike"
-        elif action == 4:
-            return "Slider - Ball"
-        elif action == 5:
-            return "Slider - Strike"
-        elif action == 6:
-            return "Changeup - Ball"
-        elif action == 7:
-            return "Changeup - Strike"
-        elif action == 8:
-            return "Knuckleball - Ball"
-        elif action == 9:
-            return "Knuckleball - Strike"
-        elif action == 10:
-            return "Splitter - Ball"
-        elif action == 11:
-            return "Splitter - Strike"
-        elif action == 12:
-            return "Sinker - Ball"
-        elif action == 13:
-            return "Sinker - Strike"
-        elif action == 14:
-            return "Cutter - Ball"
-        elif action == 15:
-            return "Cutter - Strike"
+        pitch_was_a_ball = action % len(self._pitch_intents) == 0
+        if pitch_was_a_ball:
+            pitch_desc = " - ball"
+        else:
+            pitch_desc = " - strike"
+        pitch = int(action) // len(self._pitch_intents)
+        if pitch == 0:
+            return f"Fastball{pitch_desc}"
+        elif pitch == 1:
+            return f"Curveball{pitch_desc}"
+        elif pitch == 2:
+            return f"Slider{pitch_desc}"
+        elif pitch == 3:
+            return f"Changeup{pitch_desc}"
+        elif pitch == 4:
+            return f"Knuckleball{pitch_desc}"
+        elif pitch == 5:
+            return f"Splitter{pitch_desc}"
+        elif pitch == 6:
+            return f"Sinker{pitch_desc}"
+        elif pitch == 7:
+            return f"Cutter{pitch_desc}"
         else:
             return "Unknown"

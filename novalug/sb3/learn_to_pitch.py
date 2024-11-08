@@ -29,7 +29,7 @@ check_env(env)
 
 # Define and Train the agent
 model = PPO("MlpPolicy", env, verbose=1)
-model.learn(total_timesteps=250000)
+model.learn(total_timesteps=50000)
 
 env.render()
 
