@@ -136,3 +136,12 @@ poetry run python novalug/hf/summary.py
 ```bash
 poetry run python novalug/hf/good_game.py
 ```
+
+
+## Anthropic
+
+```bash
+poetry add anthropic
+
+poetry run python novalug/ant/anthropic.py
+```
