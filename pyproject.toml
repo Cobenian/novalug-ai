@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "novalug"
+version = "0.1.0"
+description = ""
+authors = ["Bryan Weber <bryan@cobenian.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+xgboost = "^2.1.2"
+scikit-learn = "^1.5.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
