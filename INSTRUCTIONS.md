@@ -113,3 +113,13 @@ poetry update package
 Useful website:
 
 https://docs.streamlit.io/develop/quick-reference/cheat-sheet
+
+
+## Hugging Face
+
+```bash
+poetry add transformers datasets evaluate accelerate
+poetry add torch
+poetry add emoji
+poetry run python novalug/hf/happy.py
+```

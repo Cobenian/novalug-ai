@@ -13,6 +13,12 @@ black = "^24.10.0"
 pandas = "^2.2.3"
 streamlit = "^1.40.0"
 altair = "^5.4.1"
+transformers = "^4.46.2"
+datasets = "^3.1.0"
+evaluate = "^0.4.3"
+accelerate = "^1.1.1"
+torch = "^2.5.1"
+emoji = "^2.14.0"
 
 
 [build-system]
