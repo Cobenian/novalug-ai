@@ -2,6 +2,7 @@ import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
 import random
+from termcolor import cprint
 
 
 class PitchingEnv(gym.Env):
@@ -55,9 +56,10 @@ class PitchingEnv(gym.Env):
         self.set_initial_values()
 
     def step(self, action):
-        print("pitch thrown", self.action_description(action))
-        reward = self.calculate_reward(action)
-        self.update_state(reward)
+        print("\ttried to throw pitch:", self.action_description(action))
+        result = self.calculate_reward(action)
+        self.update_state(result)
+        reward = self._current_runs * -1
         observation = self.get_obs()
         info = self.get_info()
         terminated = (
@@ -69,6 +71,7 @@ class PitchingEnv(gym.Env):
         return observation, reward, terminated, truncated, info
 
     def reset(self, seed=None, options=None):
+        cprint("START OF GAME!!!!", "blue")
         self.set_initial_values()
         observation = self.get_obs()
         info = self.get_info()
@@ -110,6 +113,9 @@ class PitchingEnv(gym.Env):
         self._current_pitch_count = 0
         self._current_total_strikes = 0
         self._current_total_balls = 0
+        self._current_total_hits = 0
+        self._current_total_walks = 0
+        self._current_total_base_runners = 0
         self._current_inning = 0
         self._current_runs = 0
         self._current_outs = 0
@@ -157,37 +163,43 @@ class PitchingEnv(gym.Env):
         self._current_pitch_count += 1
         if reward < 0:
             self._current_total_strikes += 1
-            print("reward was a hit")
+            self._current_total_base_runners += 1
+            self._current_total_hits += 1
+            print("\tresult was a ball in play for a hit")
             # hit
             self.advance_runners()
             self.next_batter()
         elif reward == 0:
-            print("reward was a ball")
+            print("\tresult was a ball")
             # ball
             self._current_total_balls += 1
             self._current_balls += 1
             if self._current_balls >= 4:
+                print("\twalk!")
+                self._current_total_walks += 1
+                self._current_total_base_runners += 1
                 self.next_batter()
                 self.advance_runners()
         elif reward > 1:
-            print("reward was an out")
+            print("\tresult was a ball in play for an out")
             self._current_total_strikes += 1
             # ball in play, but out
             self._current_outs += 1
             if self._current_outs >= 3:
+                print("\tend of the inning")
                 self.next_inning()
+                self.next_batter()
         else:
-            print("reward was a strike")
+            print("\tresult was a strike")
             # strike
             self._current_total_strikes += 1
             self._current_strikes += 1
             if self._current_strikes >= 3:
+                print("\tstrikeout!")
                 self._current_outs += 1
                 if self._current_outs >= 3:
                     self.next_inning()
                 self.next_batter()
-                self.advance_runners()
-            pass
 
     def next_batter(self):
         self._current_balls = 0
@@ -198,6 +210,7 @@ class PitchingEnv(gym.Env):
 
     def advance_runners(self):
         if self._current_runner_on_third:
+            print("\tscoring a run!")
             self._current_runner_on_third = 0
             self._current_runs += 1
         if self._current_runner_on_second:
@@ -210,43 +223,69 @@ class PitchingEnv(gym.Env):
     def next_inning(self):
         self._current_inning += 1
         self._current_outs = 0
+        self._current_runner_on_first = 0
+        self._current_runner_on_second = 0
+        self._current_runner_on_third = 0
 
     def print_full(self):
         print("")
-        print("current pitch count", self._current_pitch_count)
-        print("current total strikes thrown", self._current_total_strikes)
-        print("current total balls thrown", self._current_total_balls)
-        print("current inning", self._current_inning)
-        print("current runs", self._current_runs)
-        print("current outs", self._current_outs)
-        print("current balls", self._current_balls)
-        print("current strikes", self._current_strikes)
-        print("current runner on first", self._current_runner_on_first)
-        print("current runner on second", self._current_runner_on_second)
-        print("current runner on third", self._current_runner_on_third)
-        print("current batter", self._current_batter)
-        print("current pitcher", self._pitcher_skill)
+        cprint("SUMMARY", "blue")
+        self.summary_print("runs", self._current_runs, "red")
+        self.summary_print("pitch count", self._current_pitch_count)
+        self.summary_print("total strikes thrown", self._current_total_strikes)
+        self.summary_print("total balls thrown", self._current_total_balls)
+        self.summary_print("total hits", self._current_total_hits)
+        self.summary_print("total walks", self._current_total_walks)
+        self.summary_print("total base runners", self._current_total_base_runners)
+        cprint("CURRENT GAME STATE", "blue")
+        self.summary_print("runs", self._current_runs)
+        self.summary_print("inning", self._current_inning)
+        self.summary_print("outs", self._current_outs)
+        self.summary_print("balls", self._current_balls)
+        self.summary_print("strikes", self._current_strikes)
+        self.summary_print("runner on first", self._current_runner_on_first == 1)
+        self.summary_print("runner on second", self._current_runner_on_second == 1)
+        self.summary_print("runner on third", self._current_runner_on_third == 1)
+        self.summary_print("batter", self._current_batter)
+        self.summary_print("pitcher", self._pitcher_skill)
+
+    def summary_print(self, title, value, color="blue"):
+        cprint(f"\t{title}: {value}", color)
 
     def print_count(self):
-        print(
+        content = [
             "inning",
-            self._current_inning + 1,
+            str(self._current_inning + 1),
             "balls",
-            self._current_balls,
+            str(self._current_balls),
             "strikes",
-            self._current_strikes,
+            str(self._current_strikes),
             "outs",
-            self._current_outs,
+            str(self._current_outs),
             "runs",
-            self._current_runs,
-        )
+            str(self._current_runs),
+            (
+                "no runners on"
+                if not (
+                    self._current_runner_on_first == 1
+                    or self._current_runner_on_second == 1
+                    or self._current_runner_on_third == 1
+                )
+                else ""
+            ),
+            "runner on 1B" if self._current_runner_on_first == 1 else "",
+            "runner on 2B" if self._current_runner_on_second == 1 else "",
+            "runner on 3B" if self._current_runner_on_third == 1 else "",
+        ]
+        content_str = " ".join(content)
+        cprint(content_str, "green")
 
     def action_description(self, action):
         pitch_was_a_ball = action % len(self._pitch_intents) == 0
         if pitch_was_a_ball:
-            pitch_desc = " - ball"
+            pitch_desc = " for a ball"
         else:
-            pitch_desc = " - strike"
+            pitch_desc = " for a strike"
         pitch = int(action) // len(self._pitch_intents)
         if pitch == 0:
             return f"Fastball{pitch_desc}"

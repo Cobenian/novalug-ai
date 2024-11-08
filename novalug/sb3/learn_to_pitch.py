@@ -9,36 +9,44 @@ from novalug.sb3.pitching_env import PitchingEnv
 
 pitcher_skill = [
     8,  # fastball
-    3,  # curveball
-    7,  # slider
-    # 3,  # changeup
-    # 7,  # knuckleball
-    # 7,  # splitter
-    # 5,  # sinker
-    # 4,  # cutter
+    8,  # curveball
+    8,  # slider
+    8,  # changeup
+    8,  # knuckleball
+    8,  # splitter
+    8,  # sinker
+    8,  # cutter
 ]
 
-batters = [4, 3, 7, 7, 4, 5, 3, 4, 2]
+batters = [7, 7, 7, 7, 7, 7, 7, 7, 7]
 
-defense_skill = 5
+defense_skill = 6
 
 # Instantiate the env
 env = PitchingEnv(pitcher_skill, batters, defense_skill)
 
 check_env(env)
 
+steps = 1000
+# steps = 500000
+
+model_file = "models/pitching_model_undertrained.zip"
+# model_file = "models/pitching_model_trained.zip"
+
 # Define and Train the agent
 model = PPO("MlpPolicy", env, verbose=1)
-model.learn(total_timesteps=50000)
+model.learn(total_timesteps=steps)
 
-env.render()
+model.save(model_file)
 
-vec_env = model.get_env()
-obs = vec_env.reset()
-while True:
-    env.render()
-    action, _states = model.predict(obs)
-    obs, rewards, terminated, truncated, info = env.step(action)
-    if terminated:
-        env.print_full()
-        break
+# env.render()
+
+# vec_env = model.get_env()
+# obs = vec_env.reset()
+# while True:
+#     env.render()
+#     action, _states = model.predict(obs)
+#     obs, rewards, terminated, truncated, info = env.step(action)
+#     if terminated:
+#         env.print_full()
+#         break
