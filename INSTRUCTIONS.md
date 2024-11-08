@@ -145,3 +145,41 @@ poetry add anthropic
 
 poetry run python novalug/ant/anthropic.py
 ```
+
+Ask it: 
+
+```
+what teams were in the 2019 world series?
+```
+
+Then
+
+```
+who had the most hits?
+```
+
+Then
+
+```
+get me the data as json
+```
+
+```
+only the json
+```
+
+```
+raw json only please
+```
+
+```
+what year was this?
+```
+
+```
+explain
+```
+
+```
+thank you
+```
