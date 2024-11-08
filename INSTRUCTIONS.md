@@ -22,7 +22,7 @@ poetry add scikit-learn
 Create the `novalug/hello_xgboost.py` file (with content)
 
 ```bash
-poetry run python novalug/hello_xgboost.py
+poetry run python novalug/xgb/hello_xgboost.py
 ```
 
 Error
@@ -49,7 +49,7 @@ brew install libomp
 Run again
 
 ```bash
-poetry run python novalug/hello_xgboost.py
+poetry run python novalug/xgb/hello_xgboost.py
 ```
 
 ```bash
@@ -89,9 +89,9 @@ poetry run baseball-entrypoint
 
 ```bash
 poetry add pandas
-poetry run python novalug/regression_xgboost.py
+poetry run python novalug/xgb/regression_xgboost.py
 
-poetry run python novalug/hitting.py
+poetry run python novalug/xgb/hitting.py
 ```
 
 ## Streamlit
@@ -99,7 +99,7 @@ poetry run python novalug/hitting.py
 ```bash
 poetry add streamlit
 
-poetry run streamlit run novalug/site.py
+poetry run streamlit run novalug/sl/site.py
 ```
 
 Got an error with Streamlist and python 3.13, so:

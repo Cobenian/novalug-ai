@@ -13,6 +13,9 @@ classifier = pipeline(
 with open("data/game_one_recap.txt", "r") as file:
     text = file.read()
 
+# with open("data/game_two_recap.txt", "r") as file:
+#     text = file.read()
+
 cprint("Text To Summarize:", "blue")
 cprint(text, "blue")
 

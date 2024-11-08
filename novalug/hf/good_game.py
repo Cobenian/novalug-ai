@@ -10,6 +10,9 @@ classifier = pipeline(
 with open("data/game_one_recap.txt", "r") as file:
     text = file.read()
 
+# with open("data/game_two_recap.txt", "r") as file:
+#     text = file.read()
+
 # small text version
 # results = classifier(text)
 
