@@ -51,3 +51,32 @@ poetry run python novalug/hello_xgboost.py
 poetry add black
 poetry run black .
 ```
+
+Create `novalug/baseball.py` file with content
+
+Add this to `pyproject.toml`
+
+```
+[tool.poetry.scripts]
+baseball-entrypoint = "novalug.baseball:enter"
+```
+
+```bash
+poetry run baseball-entrypoint
+```
+
+You will get a warning
+
+```
+Warning: 'baseball-entrypoint' is an entry point defined in pyproject.toml, but it's not installed as a script. You may get improper `sys.argv[0]`.
+
+The support to run uninstalled scripts will be removed in a future release.
+
+Run `poetry install` to resolve and get rid of this message.
+```
+
+```bash
+poetry install
+
+poetry run baseball-entrypoint
+```
