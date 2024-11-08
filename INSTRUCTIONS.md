@@ -123,3 +123,8 @@ poetry add torch
 poetry add emoji
 poetry run python novalug/hf/happy.py
 ```
+
+```bash
+poetry add termcolor
+poetry run python novalug/hf/summary.py
+```
