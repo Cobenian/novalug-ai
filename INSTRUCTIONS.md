@@ -183,3 +183,11 @@ explain
 ```
 thank you
 ```
+
+## Stable Baselines3
+
+```bash
+poetry add stable-baselines3
+
+poetry run python novalug/sb3/learn_to_pitch.py
+```
