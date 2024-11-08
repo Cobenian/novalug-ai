@@ -80,3 +80,9 @@ poetry install
 
 poetry run baseball-entrypoint
 ```
+
+
+```bash
+poetry add pandas
+poetry run python novalug/regression_xgboost.py
+```
