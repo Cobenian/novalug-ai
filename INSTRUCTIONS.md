@@ -10,6 +10,11 @@ poetry completions zsh > ~/.zfunc/_poetry
 
 poetry new novalug
 cd novalug
+```
+
+## XGBoost
+
+```bash
 poetry add xgboost
 poetry add scikit-learn
 ```
@@ -85,4 +90,26 @@ poetry run baseball-entrypoint
 ```bash
 poetry add pandas
 poetry run python novalug/regression_xgboost.py
+
+poetry run python novalug/hitting.py
 ```
+
+## Streamlit
+
+```bash
+poetry add streamlit
+
+poetry run streamlit run novalug/site.py
+```
+
+Got an error with Streamlist and python 3.13, so:
+
+```bash
+poetry env use 3.12
+poetry add streamlit black pandas scikit-learn xgboost
+poetry update package
+```
+
+Useful website:
+
+https://docs.streamlit.io/develop/quick-reference/cheat-sheet
