@@ -46,3 +46,8 @@ Run again
 ```bash
 poetry run python novalug/hello_xgboost.py
 ```
+
+```bash
+poetry add black
+poetry run black .
+```
