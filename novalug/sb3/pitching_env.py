@@ -9,96 +9,49 @@ class PitchingEnv(gym.Env):
 
     metadata = {"render_modes": ["human"], "render_fps": 30}
 
-    def __init__(self, pitcher, batters, defense_skill, innings=9):
+    def __init__(self, pitcher_skill, batters, defense_skill, innings=9):
         super().__init__()
-        # print('in init')
-        # Define action and observation space
-        # They must be gym.spaces objects
-        # Example when using discrete actions:
-        actions = [
-            0,  # "Fastball",
-            1,  # "Curveball",
-            2,  # "Slider",
-            3,  # "Changeup",
-            4,  # "Knuckleball",
-            5,  # "Splitter",
-            6,  # "Sinker",
-            7,  # "Cutter",
-        ]
         pitch_intent = [
             0,  # "Strike",
             1,  # "Ball",
         ]
-        N_DISCRETE_ACTIONS = len(actions) * len(pitch_intent)
+        N_DISCRETE_ACTIONS = len(pitcher_skill) * len(pitch_intent)
         self.action_space = spaces.Discrete(N_DISCRETE_ACTIONS)
         # max values for the observation space
-        pitches = 999
+        max_pitch_count = 999
         runs = 999
         outs = 3
-        pitcher_fb_skill = 10  # pitcher[0]
-        pitcher_cb_skill = 10  # pitcher[1]
-        pitcher_sl_skill = 10  # pitcher[2]
-        pitcher_ch_skill = 10  # pitcher[3]
-        pitcher_kn_skill = 10  # pitcher[4]
-        pitcher_sp_skill = 10  # pitcher[5]
-        pitcher_si_skill = 10  # pitcher[6]
-        pitcher_cu_skill = 10  # pitcher[7]
         batters_count = len(batters)
-        batter_1_skill = 10  # batters[0]
-        batter_2_skill = 10  # batters[1]
-        batter_3_skill = 10  # batters[2]
-        batter_4_skill = 10  # batters[3]
-        batter_5_skill = 10  # batters[4]
-        batter_6_skill = 10  # batters[5]
-        batter_7_skill = 10  # batters[6]
-        batter_8_skill = 10  # batters[7]
-        batter_9_skill = 10  # batters[8]
         balls = 4
         strikes = 3
-        runner_on_first = 2
-        runner_on_second = 2
-        runner_on_third = 2
-        discrete_array = [
-            innings,
-            runs,
-            outs,
-            pitches,
-            pitcher_fb_skill,
-            pitcher_cb_skill,
-            pitcher_sl_skill,
-            pitcher_ch_skill,
-            pitcher_kn_skill,
-            pitcher_sp_skill,
-            pitcher_si_skill,
-            pitcher_cu_skill,
-            batters_count,
-            batter_1_skill,
-            batter_2_skill,
-            batter_3_skill,
-            batter_4_skill,
-            batter_5_skill,
-            batter_6_skill,
-            batter_7_skill,
-            batter_8_skill,
-            batter_9_skill,
-            balls,
-            strikes,
-            runner_on_first,
-            runner_on_second,
-            runner_on_third,
-        ]
-        # print(discrete_array)
+        runner_on_first = 2  # boolean
+        runner_on_second = 2  # boolean
+        runner_on_third = 2  # boolean
+        pitch_skills = [10] * len(pitcher_skill)
+        batters_skills = [10] * len(batters)
+        discrete_array = (
+            [innings, runs, outs, max_pitch_count]
+            + pitch_skills
+            + [batters_count]
+            + batters_skills
+            + [
+                balls,
+                strikes,
+                runner_on_first,
+                runner_on_second,
+                runner_on_third,
+            ]
+        )
         self.observation_space = spaces.MultiDiscrete(discrete_array)
 
         self._innings = innings
         self._batters = batters
-        self._pitcher = pitcher
+        self._pitcher_skill = pitcher_skill
         self._defense_skill = defense_skill
         self.set_initial_values()
 
     def step(self, action):
-        # print('in step')
-        # self.render()
+        print("pitch thrown", self.action_description(action))
         reward = self.calculate_reward(action)
         self.update_state(reward)
         observation = self.get_obs()
@@ -112,56 +65,38 @@ class PitchingEnv(gym.Env):
         return observation, reward, terminated, truncated, info
 
     def reset(self, seed=None, options=None):
-        # print('in reset')
         self.set_initial_values()
         observation = self.get_obs()
-        # print('RESET observation', observation)
         info = self.get_info()
-        # print('RESET info', info)
         return observation, info
 
     def render(self):
-        # print('in render')
         self.print_count()
 
     def close(self):
-        print("in close")
         pass
 
     # our stuff
 
     def get_obs(self):
-        obs = [
-            self._current_inning,
-            self._current_runs,
-            self._current_outs,
-            self._current_pitch_count,
-            self._pitcher[0],
-            self._pitcher[1],
-            self._pitcher[2],
-            self._pitcher[3],
-            self._pitcher[4],
-            self._pitcher[5],
-            self._pitcher[6],
-            self._pitcher[7],
-            # len(self._batters),
-            self._current_batter,
-            self._batters[0],
-            self._batters[1],
-            self._batters[2],
-            self._batters[3],
-            self._batters[4],
-            self._batters[5],
-            self._batters[6],
-            self._batters[7],
-            self._batters[8],
-            self._current_balls,
-            self._current_strikes,
-            self._current_runner_on_first,
-            self._current_runner_on_second,
-            self._current_runner_on_third,
-        ]
-        # print(obs)
+        obs = (
+            [
+                self._current_inning,
+                self._current_runs,
+                self._current_outs,
+                self._current_pitch_count,
+            ]
+            + self._pitcher_skill
+            + [self._current_batter]
+            + self._batters
+            + [
+                self._current_balls,
+                self._current_strikes,
+                self._current_runner_on_first,
+                self._current_runner_on_second,
+                self._current_runner_on_third,
+            ]
+        )
         return np.array(obs)
 
     def get_info(self):
@@ -169,6 +104,8 @@ class PitchingEnv(gym.Env):
 
     def set_initial_values(self):
         self._current_pitch_count = 0
+        self._current_total_strikes = 0
+        self._current_total_balls = 0
         self._current_inning = 0
         self._current_runs = 0
         self._current_outs = 0
@@ -180,47 +117,42 @@ class PitchingEnv(gym.Env):
         self._current_batter = 0
 
     def calculate_reward(self, action):
-        # print('pitcher threw', self.action_description(action))
-        # print("pitcher threw:", action)
         pitcher_tried_to_throw_a_strike = action % 2 == 0
-        # print(type(action))
         if action <= 0:
             pitcher_skill_index = 0
         else:
             pitcher_skill_index = int(action) // 2
-        pitcher_skill_at_pitch = self._pitcher[pitcher_skill_index]
-        if pitcher_tried_to_throw_a_strike:
-            strike_chances = [1] * pitcher_skill_at_pitch
-            ball_chances = [0] * (10 - pitcher_skill_at_pitch)
-        else:
-            strike_chances = [1] * (10 - pitcher_skill_at_pitch)
-            ball_chances = [0] * pitcher_skill_at_pitch
-
-        # determine the pitch thrown
-        # determine the pitcher's skill at that pitch
-        # determine the batter's skill
+        pitcher_skill_at_pitch = self._pitcher_skill[pitcher_skill_index]
         batter_skill = self._batters[self._current_batter]
-        hit_chances = [-1] * batter_skill
-
         defense_skill = self._defense_skill
-        out_chances = [2] * defense_skill
 
-        chances = hit_chances + ball_chances + strike_chances + out_chances
-        # print("chances", chances)
-        reward = random.choice(chances)
-        # print("reward", reward)
-        return reward
-
-        # print("pitch was a strike?", pitch_was_a_strike)
         # -1 is a hit
         # 0 is a ball
         # 1 is a strike
         # 2 is an out on a ball in play
-        # return random.randint(-1, 2)
+
+        if pitcher_tried_to_throw_a_strike:
+            hit_chances = [-1] * batter_skill
+            ball_chances = [0] * (10 - pitcher_skill_at_pitch)
+            strike_chances = [1] * pitcher_skill_at_pitch
+            out_chances = [2] * defense_skill
+        else:
+            hit_chances = [-1] * batter_skill
+            # since a ball was thrown, the batter has a lower chance of hitting
+            half_length = len(hit_chances) // 2
+            hit_chances = hit_chances[:half_length]
+            ball_chances = [0] * pitcher_skill_at_pitch
+            strike_chances = [1] * (10 - pitcher_skill_at_pitch)
+            out_chances = [2] * defense_skill
+
+        chances = hit_chances + ball_chances + strike_chances + out_chances
+        reward = random.choice(chances)
+        return reward
 
     def update_state(self, reward):
         self._current_pitch_count += 1
         if reward < 0:
+            self._current_total_strikes += 1
             print("reward was a hit")
             # hit
             self.advance_runners()
@@ -228,12 +160,14 @@ class PitchingEnv(gym.Env):
         elif reward == 0:
             print("reward was a ball")
             # ball
+            self._current_total_balls += 1
             self._current_balls += 1
             if self._current_balls >= 4:
                 self.next_batter()
                 self.advance_runners()
         elif reward > 1:
             print("reward was an out")
+            self._current_total_strikes += 1
             # ball in play, but out
             self._current_outs += 1
             if self._current_outs >= 3:
@@ -241,6 +175,7 @@ class PitchingEnv(gym.Env):
         else:
             print("reward was a strike")
             # strike
+            self._current_total_strikes += 1
             self._current_strikes += 1
             if self._current_strikes >= 3:
                 self._current_outs += 1
@@ -256,7 +191,6 @@ class PitchingEnv(gym.Env):
         self._current_batter += 1
         if self._current_batter >= len(self._batters):
             self._current_batter = 0
-        # self._current_batter = self.batters[self.batters.index(self._current_batter) + 1]
 
     def advance_runners(self):
         if self._current_runner_on_third:
@@ -274,7 +208,10 @@ class PitchingEnv(gym.Env):
         self._current_outs = 0
 
     def print_full(self):
+        print("")
         print("current pitch count", self._current_pitch_count)
+        print("current total strikes thrown", self._current_total_strikes)
+        print("current total balls thrown", self._current_total_balls)
         print("current inning", self._current_inning)
         print("current runs", self._current_runs)
         print("current outs", self._current_outs)
@@ -284,7 +221,7 @@ class PitchingEnv(gym.Env):
         print("current runner on second", self._current_runner_on_second)
         print("current runner on third", self._current_runner_on_third)
         print("current batter", self._current_batter)
-        print("current pitcher", self._pitcher)
+        print("current pitcher", self._pitcher_skill)
 
     def print_count(self):
         print(
