@@ -46,7 +46,7 @@ print(preds)
 comparison_df = pd.DataFrame({"Actual": y_test, "Predicted": preds})
 
 
-st.title("page 1")
+st.title("Hitting Data Predictions")
 
 comparison_df["Actual"]
 

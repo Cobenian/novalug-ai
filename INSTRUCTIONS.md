@@ -114,6 +114,10 @@ Useful website:
 
 https://docs.streamlit.io/develop/quick-reference/cheat-sheet
 
+```bash
+poetry run streamlit run novalug/sl/site.py
+```
+
 
 ## Hugging Face
 
@@ -127,4 +131,8 @@ poetry run python novalug/hf/happy.py
 ```bash
 poetry add termcolor
 poetry run python novalug/hf/summary.py
+```
+
+```bash
+poetry run python novalug/hf/good_game.py
 ```
