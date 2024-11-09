@@ -12,8 +12,8 @@ for col in ["SB%", "PA/BB", "LD%", "FB%", "GB%", "BABIP", "BA/RISP", "AB/HR"]:
 
 
 # Define the features (X) and the target (y)
-X = df.drop(columns=["OPS"])
-# X = df.drop(columns=["OPS", "SLG", "OBP"])
+# X = df.drop(columns=["OPS"])
+X = df.drop(columns=["OPS", "SLG", "OBP"])
 y = df["OPS"]
 
 # Split the data into training and testing sets
