@@ -204,3 +204,10 @@ Use our model to make predictions
 ```bash
 poetry run python novalug/sb3/pitch.py
 ```
+
+## LlamaIndex
+
+```bash
+poetry add llama-index
+poetry add llama_index.llms.anthropic
+```
