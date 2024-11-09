@@ -28,10 +28,12 @@ env = PitcherTrainingEnv(pitcher_skill, batters, defense_skill)
 check_env(env)
 
 # steps = 1000
-steps = 15_000_000
+# steps = 15_000_000
+steps = 150_000_000
 
 # model_file = "models/pitching_model_undertrained.zip"
-model_file = "models/pitching_model_trained.zip"
+# model_file = "models/pitching_model_trained.zip"
+model_file = "models/pitching_model_trained_2.zip"
 
 # Define and Train the agent
 model = PPO("MlpPolicy", env, verbose=1)

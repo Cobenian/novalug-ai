@@ -144,10 +144,14 @@ class PitchingEnv(gym.Env):
         batter_skill = self._batters[self._current_batter]
         defense_skill = self._defense_skill
 
+        # -2 is a pitch this pitcher doesn't throw
         # -1 is a hit
         # 0 is a ball
         # 1 is a strike
         # 2 is an out on a ball in play
+
+        if pitcher_skill_at_pitch == 0:
+            return -2
 
         if pitcher_tried_to_throw_a_ball:
             hit_chances = [-1] * batter_skill
@@ -313,7 +317,6 @@ class PitchingEnv(gym.Env):
             return f"Cutter{pitch_desc}"
         else:
             return "Unknown"
-
 
 
 class PitcherTrainingEnv(PitchingEnv):
