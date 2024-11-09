@@ -168,13 +168,13 @@ class PitchingEnv(gym.Env):
             strike_chances = [2] * pitcher_skill_at_pitch
             # out_chances = [3] * defense_skill
 
-        chances = hit_chances + ball_chances + strike_chances # + out_chances
+        chances = hit_chances + ball_chances + strike_chances  # + out_chances
         result = random.choice(chances)
         if result == 0:
             # ball was hit, but did the defense get an out?
-            hit_chances = [0] * (10-defense_skill)
+            hit_chances = [0] * (10 - defense_skill)
             out_chances = [3] * defense_skill
-            random.choice(hit_chances + out_chances)
+            return random.choice(hit_chances + out_chances)
         else:
             return result
 
