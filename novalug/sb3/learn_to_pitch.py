@@ -5,7 +5,7 @@ import gymnasium as gym
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
 
-from novalug.sb3.pitching_env import PitchingEnv
+from novalug.sb3.pitching_env import PitcherTrainingEnv
 
 pitcher_skill = [
     8,  # fastball
@@ -23,15 +23,15 @@ batters = [7, 7, 7, 7, 7, 7, 7, 7, 7]
 defense_skill = 6
 
 # Instantiate the env
-env = PitchingEnv(pitcher_skill, batters, defense_skill)
+env = PitcherTrainingEnv(pitcher_skill, batters, defense_skill)
 
 check_env(env)
 
-steps = 1000
-# steps = 500000
+# steps = 1000
+steps = 15_000_000
 
-model_file = "models/pitching_model_undertrained.zip"
-# model_file = "models/pitching_model_trained.zip"
+# model_file = "models/pitching_model_undertrained.zip"
+model_file = "models/pitching_model_trained.zip"
 
 # Define and Train the agent
 model = PPO("MlpPolicy", env, verbose=1)

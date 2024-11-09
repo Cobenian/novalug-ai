@@ -53,6 +53,7 @@ class PitchingEnv(gym.Env):
         self._defense_skill = defense_skill
         self._pitch_intents = pitch_intents
         self._max_runs = max_runs
+        self._max_pitch_count = max_pitch_count
         self.set_initial_values()
 
     def step(self, action):
@@ -63,15 +64,22 @@ class PitchingEnv(gym.Env):
         observation = self.get_obs()
         info = self.get_info()
         terminated = (
-            self._current_runs >= self._max_runs
+            self._current_pitch_count >= self._max_pitch_count
+            or self._current_runs >= self._max_runs
             or self._current_inning >= self._innings
             or (self._current_inning >= self._innings and self._current_outs >= 3)
         )
-        truncated = False
+        truncated = (
+            self._current_pitch_count >= self._max_pitch_count
+            or self._current_runs >= self._max_runs
+        )
         return observation, reward, terminated, truncated, info
 
     def reset(self, seed=None, options=None):
         cprint("START OF GAME!!!!", "blue")
+        self._pitcher_skill = [random.randint(0, 9) for _ in self._pitcher_skill]
+        self._batters = [random.randint(0, 9) for _ in self._batters]
+        self._defense_skill = random.randint(0, 9)
         self.set_initial_values()
         observation = self.get_obs()
         info = self.get_info()
@@ -305,3 +313,16 @@ class PitchingEnv(gym.Env):
             return f"Cutter{pitch_desc}"
         else:
             return "Unknown"
+
+
+
+class PitcherTrainingEnv(PitchingEnv):
+    def reset(self, seed=None, options=None):
+        cprint("START OF TRAINING!!!!", "blue")
+        self._pitcher_skill = [random.randint(0, 9) for _ in self._pitcher_skill]
+        self._batters = [random.randint(0, 9) for _ in self._batters]
+        self._defense_skill = random.randint(0, 9)
+        self.set_initial_values()
+        observation = self.get_obs()
+        info = self.get_info()
+        return observation, info
