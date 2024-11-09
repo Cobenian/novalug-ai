@@ -78,9 +78,9 @@ class PitchingEnv(gym.Env):
 
     def reset(self, seed=None, options=None):
         cprint("START OF GAME!!!!", "blue")
-        self._pitcher_skill = [random.randint(0, 9) for _ in self._pitcher_skill]
-        self._batters = [random.randint(0, 9) for _ in self._batters]
-        self._defense_skill = random.randint(0, 9)
+        # self._pitcher_skill = [random.randint(0, 9) for _ in self._pitcher_skill]
+        # self._batters = [random.randint(0, 9) for _ in self._batters]
+        # self._defense_skill = random.randint(0, 9)
         self.set_initial_values()
         observation = self.get_obs()
         info = self.get_info()
@@ -156,21 +156,27 @@ class PitchingEnv(gym.Env):
 
         if pitcher_tried_to_throw_a_ball:
             hit_chances = [0] * batter_skill
-            ball_chances = [1] * (10 - pitcher_skill_at_pitch)
-            strike_chances = [2] * pitcher_skill_at_pitch
-            out_chances = [3] * defense_skill
-        else:
-            hit_chances = [0] * batter_skill
             # since a ball was thrown, the batter has a lower chance of hitting
             half_length = len(hit_chances) // 4
             hit_chances = hit_chances[:half_length]
             ball_chances = [1] * pitcher_skill_at_pitch
             strike_chances = [2] * (10 - pitcher_skill_at_pitch)
-            out_chances = [3] * defense_skill
+            # out_chances = [3] * defense_skill
+        else:
+            hit_chances = [0] * batter_skill
+            ball_chances = [1] * (10 - pitcher_skill_at_pitch)
+            strike_chances = [2] * pitcher_skill_at_pitch
+            # out_chances = [3] * defense_skill
 
-        chances = hit_chances + ball_chances + strike_chances + out_chances
-        reward = random.choice(chances)
-        return reward
+        chances = hit_chances + ball_chances + strike_chances # + out_chances
+        result = random.choice(chances)
+        if result == 0:
+            # ball was hit, but did the defense get an out?
+            hit_chances = [0] * (10-defense_skill)
+            out_chances = [3] * defense_skill
+            random.choice(hit_chances + out_chances)
+        else:
+            return result
 
     def update_state(self, reward):
         self._current_pitch_count += 1
