@@ -192,6 +192,15 @@ thank you
 
 ```bash
 poetry add stable-baselines3
+```
 
+Train our model
+```bash
 poetry run python novalug/sb3/learn_to_pitch.py
+```
+
+Use our model to make predictions
+
+```bash
+poetry run python novalug/sb3/pitch.py
 ```
