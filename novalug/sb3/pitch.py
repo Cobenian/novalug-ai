@@ -29,8 +29,9 @@ env = PitchingEnv(pitcher_skill, batters, defense_skill)
 # check_env(env)
 
 # model_file = "models/pitching_model_undertrained.zip"
-model_file = "models/pitching_model_trained.zip"
+# model_file = "models/pitching_model_trained.zip"
 # model_file = "models/pitching_model_trained_2.zip"
+model_file = "models/pitching_model_trained_well.zip"
 
 model = PPO.load(model_file, env=env)
 

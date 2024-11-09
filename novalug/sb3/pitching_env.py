@@ -60,7 +60,8 @@ class PitchingEnv(gym.Env):
         print("\ttried to throw pitch:", self.action_description(action))
         result = self.calculate_reward(action)
         self.update_state(result)
-        reward = self._current_runs * -1
+        reward = result
+        # reward = self._current_runs * -1
         observation = self.get_obs()
         info = self.get_info()
         terminated = (
@@ -144,28 +145,28 @@ class PitchingEnv(gym.Env):
         batter_skill = self._batters[self._current_batter]
         defense_skill = self._defense_skill
 
-        # -2 is a pitch this pitcher doesn't throw
-        # -1 is a hit
-        # 0 is a ball
-        # 1 is a strike
-        # 2 is an out on a ball in play
+        # -1 is a pitch this pitcher doesn't throw
+        # 0 is a hit
+        # 1 is a ball
+        # 2 is a strike
+        # 3 is an out on a ball in play
 
         if pitcher_skill_at_pitch == 0:
-            return -2
+            return -1
 
         if pitcher_tried_to_throw_a_ball:
-            hit_chances = [-1] * batter_skill
-            ball_chances = [0] * (10 - pitcher_skill_at_pitch)
-            strike_chances = [1] * pitcher_skill_at_pitch
-            out_chances = [2] * defense_skill
+            hit_chances = [0] * batter_skill
+            ball_chances = [1] * (10 - pitcher_skill_at_pitch)
+            strike_chances = [2] * pitcher_skill_at_pitch
+            out_chances = [3] * defense_skill
         else:
-            hit_chances = [-1] * batter_skill
+            hit_chances = [0] * batter_skill
             # since a ball was thrown, the batter has a lower chance of hitting
             half_length = len(hit_chances) // 4
             hit_chances = hit_chances[:half_length]
-            ball_chances = [0] * pitcher_skill_at_pitch
-            strike_chances = [1] * (10 - pitcher_skill_at_pitch)
-            out_chances = [2] * defense_skill
+            ball_chances = [1] * pitcher_skill_at_pitch
+            strike_chances = [2] * (10 - pitcher_skill_at_pitch)
+            out_chances = [3] * defense_skill
 
         chances = hit_chances + ball_chances + strike_chances + out_chances
         reward = random.choice(chances)
@@ -173,7 +174,7 @@ class PitchingEnv(gym.Env):
 
     def update_state(self, reward):
         self._current_pitch_count += 1
-        if reward < 0:
+        if reward <= 0:
             self._current_total_strikes += 1
             self._current_total_base_runners += 1
             self._current_total_hits += 1
@@ -181,7 +182,7 @@ class PitchingEnv(gym.Env):
             # hit
             self.advance_runners()
             self.next_batter()
-        elif reward == 0:
+        elif reward == 1:
             print("\tresult was a ball")
             # ball
             self._current_total_balls += 1
@@ -192,7 +193,7 @@ class PitchingEnv(gym.Env):
                 self._current_total_base_runners += 1
                 self.next_batter()
                 self.advance_runners()
-        elif reward > 1:
+        elif reward == 3:
             print("\tresult was a ball in play for an out")
             self._current_total_strikes += 1
             # ball in play, but out
@@ -202,6 +203,7 @@ class PitchingEnv(gym.Env):
                 self.next_inning()
                 self.next_batter()
         else:
+            # reward == 2
             print("\tresult was a strike")
             # strike
             self._current_total_strikes += 1

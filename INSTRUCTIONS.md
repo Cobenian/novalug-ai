@@ -137,6 +137,10 @@ poetry run python novalug/hf/summary.py
 poetry run python novalug/hf/good_game.py
 ```
 
+```bash
+poetry add sentence-transformers
+```
+
 
 ## Anthropic
 
