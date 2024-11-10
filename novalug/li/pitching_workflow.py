@@ -5,6 +5,8 @@ from llama_index.core.workflow import (
     Workflow,
     step,
 )
+from llama_index.core.workflow import InputRequiredEvent, HumanResponseEvent
+
 import asyncio
 
 
@@ -18,10 +20,6 @@ from stable_baselines3 import PPO
 
 from novalug.sb3.pitching_env import PitchingEnv
 from novalug.li.game_state import GameState
-
-import numpy as np
-
-print(np.__version__)
 
 
 class Pitcher(BaseModel):
@@ -43,6 +41,10 @@ class Pitcher(BaseModel):
 
 def format_pitchers(pitchers):
     return "\n".join([str(pitcher) for pitcher in pitchers])
+
+
+class GameOverEvent(Event):
+    result: str
 
 
 class ChoosePitcherEvent(Event):
@@ -97,7 +99,7 @@ class PitchingFlow(Workflow):
         return ThrowAPitchEvent(game_state=game_state)
 
     @step
-    async def throw_a_pitch(self, ev: ThrowAPitchEvent) -> StopEvent:
+    async def throw_a_pitch(self, ev: ThrowAPitchEvent) -> InputRequiredEvent:
         response = "time to throw a pitch"
 
         env = PitchingEnv(game_state)
@@ -111,7 +113,18 @@ class PitchingFlow(Workflow):
         pitch = game_state.action_description(action)
         print("INTEND TO THROW PITCH:", pitch)
 
-        return StopEvent(result=str(pitch))
+        return InputRequiredEvent(
+            prefix="What happened after the pitch?", game_state=game_state
+        )
+
+    @step
+    async def step2(self, ev: HumanResponseEvent) -> GameOverEvent:
+        print(ev.response)
+        return GameOverEvent(result=ev.response)
+
+    @step
+    async def observe_the_result(self, ev: GameOverEvent) -> StopEvent:
+        return StopEvent(result=str("game over"))
 
 
 pitchers = [
@@ -133,8 +146,18 @@ game_state.set_initial_values()
 
 
 async def main():
-    w = PitchingFlow(timeout=60, verbose=False)
-    result = await w.run(game_state=game_state)
+    workflow = PitchingFlow(timeout=60, verbose=False)
+
+    handler = workflow.run(game_state=game_state)
+    async for event in handler.stream_events():
+        if isinstance(event, InputRequiredEvent):
+            # here, we can handle human input however you want
+            # this means using input(), websockets, accessing async state, etc.
+            # here, we just use input()
+            response = input(event.prefix)
+            handler.ctx.send_event(HumanResponseEvent(response=response))
+
+    result = await handler
     print(str(result))
 
 
