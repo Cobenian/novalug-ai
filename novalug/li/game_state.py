@@ -117,6 +117,12 @@ class GameState:
     def get_current_runner_on_third(self):
         return self._current_runner_on_third
 
+    def get_remaining_pitchers(self):
+        return self._remaining_pitchers
+
+    def set_pitcher_skills(self, pitcher_skills):
+        self._pitcher_skills = pitcher_skills
+
     # -1 is a pitch this pitcher doesn't throw
     # 0 is a hit
     # 1 is a ball

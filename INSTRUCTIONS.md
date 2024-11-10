@@ -211,3 +211,9 @@ poetry run python novalug/sb3/pitch.py
 poetry add llama-index
 poetry add llama_index.llms.anthropic
 ```
+
+llama-index doesn't work with numpy 2.0+
+
+```bash
+poetry add numpy@<2.0.0
+```
