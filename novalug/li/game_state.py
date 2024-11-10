@@ -120,8 +120,22 @@ class GameState:
     def get_remaining_pitchers(self):
         return self._remaining_pitchers
 
+    def get_pitcher_stats(self):
+        return {
+            "pitch_count": self._current_pitch_count,
+            "total_strikes": self._current_total_strikes,
+            "total_balls": self._current_total_balls,
+            "total_hits": self._current_total_hits,
+            "total_walks": self._current_total_walks,
+            "total_base_runners": self._current_total_base_runners,
+            "runs": self._current_runs,
+        }
+
     def set_pitcher_skills(self, pitcher_skills):
         self._pitcher_skills = pitcher_skills
+
+    def set_remaining_pitchers(self, remaining_pitchers):
+        self._remaining_pitchers = remaining_pitchers
 
     # -1 is a pitch this pitcher doesn't throw
     # 0 is a hit
@@ -130,19 +144,19 @@ class GameState:
     # 3 is an out on a ball in play
 
     def result_of_play_was_a_pitch_this_pitcher_does_not_throw(self, pitch):
-        return pitch == -1
+        return pitch == -1 or pitch == "non_pitch"
 
     def result_of_play_was_a_hit(self, pitch):
-        return pitch == 0
+        return pitch == 0 or pitch == "hit"
 
     def result_of_play_was_a_ball(self, pitch):
-        return pitch == 1
+        return pitch == 1 or pitch == "ball"
 
     def result_of_play_was_a_strike(self, pitch):
-        return pitch == 2
+        return pitch == 2 or pitch == "strike"
 
     def result_of_play_was_an_out(self, pitch):
-        return pitch == 3
+        return pitch == 3 or pitch == "out"
 
     def handle_a_hit(self):
         self._current_total_base_runners += 1
@@ -217,6 +231,8 @@ class GameState:
             return self.score_strike()
         elif self.result_of_play_was_an_out(result_of_play):
             return self.score_out()
+        else:
+            raise ValueError(f"Invalid result of play {result_of_play}")
 
     def next_batter(self):
         self._current_balls = 0
@@ -268,6 +284,19 @@ class GameState:
 
     def summary_print(self, title, value, color="blue"):
         cprint(f"\t{title}: {value}", color)
+
+    def get_current_count_info(self):
+        return {
+            "inning": self._current_inning + 1,
+            "balls": self._current_total_balls,
+            "strikes": self._current_total_strikes,
+            "outs": self._current_outs,
+            "runs": self._current_runs,
+            "hits": self._current_total_hits,
+            "runner_on_first": self._current_runner_on_first,
+            "runner_on_second": self._current_runner_on_second,
+            "runner_on_third": self._current_runner_on_third,
+        }
 
     def print_count(self):
         content = [

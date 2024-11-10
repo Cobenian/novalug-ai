@@ -20,6 +20,7 @@ from stable_baselines3 import PPO
 
 from novalug.sb3.pitching_env import PitchingEnv
 from novalug.li.game_state import GameState
+from novalug.li.baseball_rules import BaseballRules
 
 
 class Pitcher(BaseModel):
@@ -44,7 +45,11 @@ def format_pitchers(pitchers):
 
 
 class GameOverEvent(Event):
-    result: str
+    game_state: GameState
+
+
+class ChangePitcherDecisionEvent(Event):
+    game_state: GameState
 
 
 class ChoosePitcherEvent(Event):
@@ -91,16 +96,21 @@ class PitchingFlow(Workflow):
         # Get the chosen pitcher object
         chosen_pitcher = pitchers[chosen_pitcher_index]
 
+        remaining_pitchers = (
+            pitchers[:chosen_pitcher_index] + pitchers[chosen_pitcher_index + 1 :]
+        )
+
         print(f"Chosen pitcher: {chosen_pitcher}")
 
         pitcher_skills = chosen_pitcher.get_pitcher_skills()
         game_state.set_pitcher_skills(pitcher_skills)
+        game_state.set_remaining_pitchers(remaining_pitchers)
 
         return ThrowAPitchEvent(game_state=game_state)
 
     @step
     async def throw_a_pitch(self, ev: ThrowAPitchEvent) -> InputRequiredEvent:
-        response = "time to throw a pitch"
+        game_state = ev.game_state
 
         env = PitchingEnv(game_state)
 
@@ -118,12 +128,54 @@ class PitchingFlow(Workflow):
         )
 
     @step
-    async def step2(self, ev: HumanResponseEvent) -> GameOverEvent:
+    async def decide_if_should_change_pitchers(
+        self, ev: HumanResponseEvent
+    ) -> ChangePitcherDecisionEvent:
+        game_state = ev.game_state
         print(ev.response)
-        return GameOverEvent(result=ev.response)
+
+        game_state.print_full()
+        description_of_the_play = ev.response
+        prompt = f"You are to choose between one of the following outcomes based on the text description provided. You can only choose one of hit, out, ball strike or game over. The description of the play was {description_of_the_play}. Resond with your reasoning. On the last line type only your choice with nothing else."
+        response = await self.llm.acomplete(prompt)
+        print(response)
+        response_text = response.text.strip()
+        last_line = response_text.split("\n")[-1]
+        play = last_line.lower()
+        print(play)
+        if play in ["game over"]:
+            return GameOverEvent(game_state=game_state)
+        else:
+            game_state.update_game_state_for_play(play)
+            game_state.print_full()
+
+        baseball_rules = BaseballRules()
+
+        if game_state.game_is_over(baseball_rules):
+            return GameOverEvent(game_state=game_state)
+
+        return ChangePitcherDecisionEvent(game_state=game_state)
 
     @step
-    async def observe_the_result(self, ev: GameOverEvent) -> StopEvent:
+    async def change_pitcher(self, ev: ChangePitcherDecisionEvent) -> GameOverEvent:
+        game_state = ev.game_state
+        current_pitcher_stats = game_state.get_pitcher_stats()
+        print(f"Current pitcher stats: {current_pitcher_stats}")
+
+        prompt = f"Pitchers should not throw over 12 pitches or 50% balls. If they do or if they give up 3 runs they should be pulled from the game. Given these current pitcher stats: {current_pitcher_stats}, should we change the pitcher? Provide an explanation of your reasoning. On the last line, answer with yes or no. Do not provide any additional information on the last line."
+        response = await self.llm.acomplete(prompt)
+        print(response)
+        response_text = response.text.strip()
+        last_line = response_text.split("\n")[-1]
+        should_change_pitcher = last_line.lower() == "yes"
+        if should_change_pitcher:
+            return ChoosePitcherEvent(game_state=game_state)
+        else:
+            return ThrowAPitchEvent(game_state=game_state)
+
+    @step
+    async def end_the_game(self, ev: GameOverEvent) -> StopEvent:
+        game_state = ev.game_state
         return StopEvent(result=str("game over"))
 
 
@@ -139,23 +191,25 @@ pitch_intents = [0, 0, 1]
 batters = [8, 9, 7, 7, 4, 5, 3, 4, 4]
 defense_skill = 7
 
-game_state = GameState(
+initial_game_state = GameState(
     pitcher_skill, pitch_intents, batters, defense_skill, remaining_pitchers=pitchers
 )
-game_state.set_initial_values()
+initial_game_state.set_initial_values()
 
 
 async def main():
     workflow = PitchingFlow(timeout=60, verbose=False)
 
-    handler = workflow.run(game_state=game_state)
+    handler = workflow.run(game_state=initial_game_state)
     async for event in handler.stream_events():
         if isinstance(event, InputRequiredEvent):
             # here, we can handle human input however you want
             # this means using input(), websockets, accessing async state, etc.
             # here, we just use input()
             response = input(event.prefix)
-            handler.ctx.send_event(HumanResponseEvent(response=response))
+            handler.ctx.send_event(
+                HumanResponseEvent(response=response, game_state=event.game_state)
+            )
 
     result = await handler
     print(str(result))
