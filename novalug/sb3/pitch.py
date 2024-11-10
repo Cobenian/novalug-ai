@@ -4,8 +4,8 @@ from stable_baselines3.common.env_checker import check_env
 from novalug.sb3.pitching_env import PitchingEnv
 from novalug.li.game_state import GameState
 
-model_file = "models/pitching_model_undertrained.zip"
-# model_file = "models/pitching_model_trained.zip"
+# model_file = "models/pitching_model_undertrained.zip"
+model_file = "models/pitching_model_trained.zip"
 
 pitcher_skill = [
     8,  # fastball
