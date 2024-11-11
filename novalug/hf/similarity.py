@@ -11,7 +11,7 @@ def create_similarity_embeddings():
     model = SentenceTransformer("all-MiniLM-L6-v2")
 
     # Load the CSV file into a DataFrame
-    df = pd.read_csv("data/hitting.csv")
+    df = pd.read_csv("data/stats/hitting.csv")
 
     # Get the number of rows
     num_rows = df.shape[0]
@@ -66,10 +66,10 @@ def recommend_top_5(row_index, cosine_sim_df):
 
 # cosine_sim_df = create_similarity_embeddings()
 # # Save the cosine similarity DataFrame to a CSV file
-# cosine_sim_df.to_csv("data/cosine_similarity_matrix.csv", index=False)
+# cosine_sim_df.to_csv("data/similarity/cosine_similarity_matrix.csv", index=False)
 
 # # Load the cosine similarity DataFrame from a CSV file
-cosine_sim_df = pd.read_csv("data/cosine_similarity_matrix.csv")
+cosine_sim_df = pd.read_csv("data/similarity/cosine_similarity_matrix.csv")
 
 # Example usage
 row_index = 0  # Index of the row for which to find similar rows

@@ -217,3 +217,22 @@ llama-index doesn't work with numpy 2.0+
 ```bash
 poetry add numpy@<2.0.0
 ```
+
+## RAG (With Weaviate)
+
+Run weaviate server in docker container
+
+```bash
+docker run -p 8080:8080 -p 50051:50051 cr.weaviate.io/semitechnologies/weaviate:1.27.2
+```
+
+Test client connectivity to the server
+```bash
+poetry add weaviate-client
+poetry add llama-index-vector-stores-weaviate
+poetry run python novalug/wvt/ready.py
+```
+
+```bash
+poetry add llama-index-embeddings-huggingface
+```
