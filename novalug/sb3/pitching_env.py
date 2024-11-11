@@ -3,7 +3,7 @@ import numpy as np
 from gymnasium import spaces
 import random
 from termcolor import cprint
-from novalug.li.baseball_rules import BaseballRules
+from novalug.baseball.baseball_rules import BaseballRules
 
 
 class PitchingEnv(gym.Env):

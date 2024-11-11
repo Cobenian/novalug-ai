@@ -19,8 +19,8 @@ from stable_baselines3 import PPO
 # from stable_baselines3.common.env_checker import check_env
 
 from novalug.sb3.pitching_env import PitchingEnv
-from novalug.li.game_state import GameState
-from novalug.li.baseball_rules import BaseballRules
+from novalug.baseball.game_state import GameState
+from novalug.baseball.baseball_rules import BaseballRules
 
 
 class Pitcher(BaseModel):

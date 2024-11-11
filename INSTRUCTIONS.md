@@ -236,3 +236,10 @@ poetry run python novalug/wvt/ready.py
 ```bash
 poetry add llama-index-embeddings-huggingface
 ```
+
+
+## Agents
+
+```bash
+poetry add llama_agents
+```
