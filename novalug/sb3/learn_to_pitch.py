@@ -43,7 +43,7 @@ env = PitcherTrainingEnv(game_state)
 
 check_env(env)
 
-steps = 10_000_000
+steps = 25_000_000
 
 # model_file = "models/pitching_model_undertrained.zip"
 model_file = "models/pitching_model_trained.zip"

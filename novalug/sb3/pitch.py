@@ -1,5 +1,6 @@
 from stable_baselines3 import PPO
-from stable_baselines3.common.env_checker import check_env
+
+# from stable_baselines3.common.env_checker import check_env
 
 from novalug.sb3.pitching_env import PitchingEnv
 from novalug.li.game_state import GameState
@@ -33,7 +34,7 @@ game_state = GameState(pitcher_skill, pitch_intents, batters, defense_skill)
 
 # Instantiate the env
 env = PitchingEnv(game_state)
-check_env(env)
+# check_env(env)
 
 model = PPO.load(model_file, env=env)
 
