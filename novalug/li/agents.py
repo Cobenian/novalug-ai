@@ -61,9 +61,7 @@ with weaviate.connect_to_local() as client:
     )
 
     # wrap the worker in the top-level planner
-    agent = StructuredPlannerAgent(
-        worker, tools=[game_recap_tool], verbose=True, llm=llm_anthropic
-    )
+    agent = StructuredPlannerAgent(worker, tools=[], verbose=True, llm=llm_anthropic)
 
     nest_asyncio.apply()
 
