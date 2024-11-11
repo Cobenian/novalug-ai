@@ -24,7 +24,8 @@ pitch_intents = [
     1,  # ball
 ]
 
-batters = [8, 9, 7, 7, 4, 5, 3, 4, 4]
+# batters = [8, 9, 7, 7, 4, 5, 3, 4, 4]
+batters = [4, 3, 4, 3, 3, 2, 3, 1, 2]
 
 defense_skill = 7
 

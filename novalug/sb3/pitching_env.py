@@ -94,17 +94,17 @@ class PitchingEnv(gym.Env):
 
     def get_reward_for_play_outcome(self, outcome):
         if outcome == "non_pitch":
-            return -1.0
+            return -10
         elif outcome == "hit":
-            return 0.0
+            return 2
         elif outcome == "walk":
-            return 0.1
+            return 1
         elif outcome == "ball":
-            return 0.3
+            return 3
         elif outcome == "strike":
-            return 0.8
+            return 25
         elif outcome == "out":
-            return 1.0
+            return 100
 
     def get_game_state(self):
         return self._game_state

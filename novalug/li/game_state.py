@@ -221,7 +221,10 @@ class GameState:
     def update_game_state_for_play(self, result_of_play):
         self._current_pitch_count += 1
         if self.result_of_play_was_a_pitch_this_pitcher_does_not_throw(result_of_play):
-            self.score_ball()
+            if random.choice([True, False]):
+                self.score_hit()
+            else:
+                self.score_ball()
             return "non_pitch"
         elif self.result_of_play_was_a_hit(result_of_play):
             return self.score_hit()
