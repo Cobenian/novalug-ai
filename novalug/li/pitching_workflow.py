@@ -16,6 +16,8 @@ from llama_index.core.bridge.pydantic import BaseModel
 
 from stable_baselines3 import PPO
 
+from termcolor import cprint
+
 # from stable_baselines3.common.env_checker import check_env
 
 from novalug.sb3.pitching_env import PitchingEnv
@@ -72,17 +74,21 @@ class PitchingFlow(Workflow):
     @step
     async def choose_available_pitcher(
         self, ev: ChoosePitcherEvent
-    ) -> ThrowAPitchEvent:
+    ) -> ThrowAPitchEvent | GameOverEvent:
         game_state = ev.game_state
 
         pitchers = game_state.get_remaining_pitchers()
+
+        if len(pitchers) == 0:
+            cprint("No more pitchers available", "blue")
+            return GameOverEvent(game_state=game_state)
 
         # Format the list of pitchers into a string
         formatted_pitchers = format_pitchers(pitchers)
 
         prompt = f"Given the information about the following pitchers, tell me which pitcher should pitch next:\n{formatted_pitchers}\n\nPlease provide the index of the chosen pitcher. Explain your reasoning. At the end of your explanation, on a new line type the index of the chosen pitcher and ONLY the index without any other text."
         response = await self.llm.acomplete(prompt)
-        print(response)
+        cprint(response, "yellow")
 
         # Access the text value of the completion response
         response_text = response.text.strip()
@@ -100,7 +106,7 @@ class PitchingFlow(Workflow):
             pitchers[:chosen_pitcher_index] + pitchers[chosen_pitcher_index + 1 :]
         )
 
-        print(f"Chosen pitcher: {chosen_pitcher}")
+        cprint(f"Chosen pitcher: {chosen_pitcher}", "blue")
 
         pitcher_skills = chosen_pitcher.get_pitcher_skills()
         game_state.set_pitcher_skills(pitcher_skills)
@@ -121,7 +127,7 @@ class PitchingFlow(Workflow):
         obs = env.get_obs()
         action, _states = model.predict(obs, deterministic=True)
         pitch = game_state.action_description(action)
-        print("INTEND TO THROW PITCH:", pitch)
+        cprint(f"INTEND TO THROW PITCH: {pitch}", "blue")
 
         return InputRequiredEvent(
             prefix="What happened after the pitch?", game_state=game_state
@@ -130,24 +136,24 @@ class PitchingFlow(Workflow):
     @step
     async def decide_if_should_change_pitchers(
         self, ev: HumanResponseEvent
-    ) -> ChangePitcherDecisionEvent:
+    ) -> ChangePitcherDecisionEvent | GameOverEvent:
         game_state = ev.game_state
-        print(ev.response)
+        # cprint(ev.response, 'yellow')
 
         game_state.print_full()
         description_of_the_play = ev.response
-        prompt = f"You are to choose between one of the following outcomes based on the text description provided. You can only choose one of hit, out, ball strike or game over. The description of the play was {description_of_the_play}. Resond with your reasoning. On the last line type only your choice with nothing else."
+        prompt = f"You are to choose between one of the following outcomes based on the text description provided. You can only choose one of hit, out, ball, strike or game over. The description of the play was {description_of_the_play}. Resond with your reasoning. On the last line type only your choice with nothing else."
         response = await self.llm.acomplete(prompt)
-        print(response)
+        cprint(response, "yellow")
         response_text = response.text.strip()
         last_line = response_text.split("\n")[-1]
         play = last_line.lower()
-        print(play)
+        cprint(play, "blue")
         if play in ["game over"]:
             return GameOverEvent(game_state=game_state)
         else:
             game_state.update_game_state_for_play(play)
-            game_state.print_full()
+            cprint(game_state.get_current_inning_info(), "blue")
 
         baseball_rules = BaseballRules()
 
@@ -157,14 +163,19 @@ class PitchingFlow(Workflow):
         return ChangePitcherDecisionEvent(game_state=game_state)
 
     @step
-    async def change_pitcher(self, ev: ChangePitcherDecisionEvent) -> GameOverEvent:
+    async def change_pitcher(
+        self, ev: ChangePitcherDecisionEvent
+    ) -> ChoosePitcherEvent | ThrowAPitchEvent:
         game_state = ev.game_state
         current_pitcher_stats = game_state.get_pitcher_stats()
-        print(f"Current pitcher stats: {current_pitcher_stats}")
+        cprint(
+            f"Should we change pitcher based on current pitcher stats: {current_pitcher_stats}",
+            "green",
+        )
 
-        prompt = f"Pitchers should not throw over 12 pitches or 50% balls. If they do or if they give up 3 runs they should be pulled from the game. Given these current pitcher stats: {current_pitcher_stats}, should we change the pitcher? Provide an explanation of your reasoning. On the last line, answer with yes or no. Do not provide any additional information on the last line."
+        prompt = f"Pitchers should not throw less than 10 pitches. Pitchers should not throw more than 45 pitches. If the pitcher throws more than 50% balls you should pull them. If they do or if they give up 3 runs they should be pulled from the game. Given these current pitcher stats: {current_pitcher_stats}, should we change the pitcher? Provide an explanation of your reasoning. On the last line, answer with yes or no. Do not provide any additional information on the last line."
         response = await self.llm.acomplete(prompt)
-        print(response)
+        cprint(response, "yellow")
         response_text = response.text.strip()
         last_line = response_text.split("\n")[-1]
         should_change_pitcher = last_line.lower() == "yes"
@@ -212,7 +223,7 @@ async def main():
             )
 
     result = await handler
-    print(str(result))
+    cprint(str(result), "red")
 
 
 asyncio.run(main())

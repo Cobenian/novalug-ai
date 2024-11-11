@@ -131,6 +131,18 @@ class GameState:
             "runs": self._current_runs,
         }
 
+    def get_current_inning_info(self):
+        return {
+            "inning": self._current_inning + 1,
+            "runs": self._current_runs,
+            "outs": self._current_outs,
+            "balls": self._current_balls,
+            "strikes": self._current_strikes,
+            "runner_on_first": self._current_runner_on_first,
+            "runner_on_second": self._current_runner_on_second,
+            "runner_on_third": self._current_runner_on_third,
+        }
+
     def set_pitcher_skills(self, pitcher_skills):
         self._pitcher_skills = pitcher_skills
 

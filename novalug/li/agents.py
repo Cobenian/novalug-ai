@@ -6,17 +6,25 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.anthropic import Anthropic
 import os
 from termcolor import cprint
-from llama_index.core.tools import QueryEngineTool
+from llama_index.core.tools import QueryEngineTool, FunctionTool
 import nest_asyncio
+import pandas as pd
 
 
 from llama_index.core.agent import (
     StructuredPlannerAgent,
     FunctionCallingAgentWorker,
-    ReActAgentWorker,
 )
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
+
+def scores_data():
+    filename = "data/schedule/schedule_with_scores.csv"
+    # read in the file as a pandas dataframe
+    df = pd.read_csv(filename)
+    return df
+
 
 with weaviate.connect_to_local() as client:
 
@@ -37,15 +45,19 @@ with weaviate.connect_to_local() as client:
 
     game_recap_tool = QueryEngineTool.from_defaults(
         query_engine,
-        name="game recaps",
+        name="game-recaps",
         description="Useful for asking questions about the Thundercats baseball games.",
     )
 
-    # TODO add a stats tool
+    scores_tool = FunctionTool.from_defaults(
+        fn=scores_data,
+        name="scores",
+        description="Get the scores of the Thundercats games.",
+    )
 
     # create the function calling worker for reasoning
     worker = FunctionCallingAgentWorker.from_tools(
-        [game_recap_tool], verbose=True, llm=llm_anthropic
+        [game_recap_tool, scores_tool], verbose=True, llm=llm_anthropic
     )
 
     # wrap the worker in the top-level planner
