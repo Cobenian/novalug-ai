@@ -55,3 +55,19 @@ with weaviate.connect_to_local() as client:
     query_engine = index.as_query_engine(llm=Anthropic())
     response = query_engine.query("Which teams did the Thundercats play against?")
     print(response)
+    print("")
+
+    chat_engine = index.as_chat_engine(llm=Anthropic())
+    response = chat_engine.chat(
+        "Who had the most hits for the Thundercats in each game?"
+    )
+    print(response)
+    print("")
+
+    response = chat_engine.chat("Who the Thundercats play next?")
+    print(response)
+    print("")
+
+    response = chat_engine.chat("When do they play them?")
+    print(response)
+    print("")

@@ -35,15 +35,19 @@ with weaviate.connect_to_local() as client:
     cprint("our opponents", "blue")
     print(response)
     print("")
-    response = query_engine.query("Who was the starting pitcher for the Thundercats?")
+    response = query_engine.query(
+        "Who was the starting pitcher for the Thundercats against the Braddock Bearcats?"
+    )
     cprint("our starting pitcher", "blue")
     print(response)
     print("")
-    response = query_engine.query("Who had the most hits on the Thundercats?")
+    response = query_engine.query(
+        "Who had the most hits on the Thundercats vs the Bearcats?"
+    )
     cprint("our leading hitter", "blue")
     print(response)
     print("")
-    response = query_engine.query("Who was the starting pitcher for the Bearcats?")
+    response = query_engine.query("Who was the starting pitcher for the Diamond Dogs?")
     cprint("oppsosing starting pitcher?", "blue")
     print(response)
     print("")
