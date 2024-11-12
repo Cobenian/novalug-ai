@@ -2,6 +2,10 @@
 
 - Start weaviate docker container
 
+```bash
+docker run -p 8080:8080 -p 50051:50051 cr.weaviate.io/semitechnologies/weaviate:1.27.2
+```
+
 ## Backstory - New coach for a baseball team
 
 Oh no, the old coach has moved out of town! You have taken over the team.
