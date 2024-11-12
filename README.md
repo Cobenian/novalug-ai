@@ -116,8 +116,33 @@ poetry run chat-about-the-season
 poetry run python novalug/wvt/query.py
 ```
 
+### What did we learn?
+
+We can augment a LLM with our own data!
+
+> [!TIP]
+> Consider carefully before sending any data to an LLM.
+
+> [!NOTE]
+> We did not cover ollama, but it is possible to run LLMs locally.
+
 ## Some more chat with agents
+
+This planning agent will attempt to figure out what steps are necessary to solve the question asked.
 
 ```bash
 poetry run python novalug/li/agents.py
+```
+
+### What did we learn?
+
+Agents are a very exciting idea. We expect big advancements in these library capabilities in the next few years.
+
+> [!WARNING]
+> Agents tend to be highly unreliable. While they are a very exciting concept, they frequently fail to run.
+
+## Build a website to commemorate our season!
+
+```bash
+poetry run streamlit run novalug/sl/site.py
 ```

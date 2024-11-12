@@ -8,6 +8,7 @@ from sklearn.metrics import mean_squared_error
 
 # Load the CSV file into a DataFrame
 df = pd.read_csv("data/stats/hitting.csv")
+df = df.drop(columns=["BATTER"])
 
 # Convert object columns to numeric, forcing errors to NaN
 for col in ["SB%", "PA/BB", "LD%", "FB%", "GB%", "BABIP", "BA/RISP", "AB/HR"]:
