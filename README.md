@@ -28,10 +28,18 @@ poetry run make-lineup
 
 ### Learn To Call Pitches
 
-I haven't coached before, let's simulate a game to get some practice. In particular, let's focus on the pitches the pitcher should throw given the game situation.
+I haven't coached before, so I am not good at calling pitches. What if AI could learn to call pitches for me?
+
+First we need to train the AI to learn which pitches to call based on the game situation.
 
 ```bash
 poetry run learn-to-pitch
+```
+
+Now let's use the model to simulate a game and see what it learned.
+
+```bash
+poetry run practice-calling-pitches
 ```
 
 #### What did we learn?
@@ -40,3 +48,25 @@ Use `Deep Reinforcement Learning` to create models that learn which action to ta
 
 > [!TIP]
 > Too much training can overfit your model. Insufficient training can underfit your model which means that the predictions it makes will not be very good.
+
+### Our first game
+
+Finally, it is game day. But oh no, one of our hitters can't make it to the game. Let's find the hitter on the bench that is the most similar so we can put them in the game!
+
+```bash
+poetry run recommend-similar-hitter
+```
+
+#### What did we learn?
+
+`Hugging Face` is a website with models, datasets and much more provided by the community. We can use existing models with our data or use existing datasets to train our own models.
+
+> [!TIP]
+> There are many models and dataset on HuggingFace. Be sure to experiment with several models to see which one works best for you.
+
+> [!TIP]
+> New models and datasets are being added all the time. Be sure to check the website for the latest models.
+
+> [!TIP]
+> We have found this web page to be very helpful when trying to understand the types of models that exist on HuggingFace. [Hugging Face Tasks](https://huggingface.co/tasks)
+

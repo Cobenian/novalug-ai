@@ -120,7 +120,7 @@ class PitchingFlow(Workflow):
 
         env = PitchingEnv(game_state)
 
-        model_file = "models/pitching_model_trained.zip"
+        model_file = "models/sb3/pitching_model_trained.zip"
 
         model = PPO.load(model_file, env=env)
 

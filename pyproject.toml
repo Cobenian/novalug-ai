@@ -38,3 +38,5 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.scripts]
 make-lineup = "novalug.xgb.hitting:main"
 learn-to-pitch = "novalug.sb3.learn_to_pitch:main"
+practice-calling-pitches = "novalug.sb3.practice_calling_pitches:main"
+recommend-similar-hitter = "novalug.hf.recommend_similar_hitter:main"
