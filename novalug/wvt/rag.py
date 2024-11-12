@@ -3,11 +3,11 @@ from llama_index.core import SimpleDirectoryReader
 from llama_index.vector_stores.weaviate import WeaviateVectorStore
 from llama_index.core import VectorStoreIndex, StorageContext
 from llama_index.core.node_parser import SimpleFileNodeParser
-from sentence_transformers import SentenceTransformer
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.anthropic import Anthropic
-import os
+from sentence_transformers import SentenceTransformer
 from termcolor import cprint
+import os
 
 # Set the environment variable to disable parallelism in tokenizers
 os.environ["TOKENIZERS_PARALLELISM"] = "false"

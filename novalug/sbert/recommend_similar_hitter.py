@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import torch
 from sentence_transformers import SentenceTransformer, util
 from termcolor import cprint

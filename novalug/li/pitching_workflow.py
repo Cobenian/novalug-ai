@@ -6,16 +6,10 @@ from llama_index.core.workflow import (
     step,
 )
 from llama_index.core.workflow import InputRequiredEvent, HumanResponseEvent
-
-import asyncio
-
-
 from llama_index.llms.anthropic import Anthropic
-from llama_index.core.prompts import PromptTemplate
 from llama_index.core.bridge.pydantic import BaseModel
-
 from stable_baselines3 import PPO
-
+import asyncio
 from termcolor import cprint
 
 # from stable_baselines3.common.env_checker import check_env

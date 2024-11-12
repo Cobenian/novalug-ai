@@ -1,11 +1,11 @@
 import weaviate
-from llama_index.core import VectorStoreIndex, StorageContext
+from llama_index.core import VectorStoreIndex
 from llama_index.vector_stores.weaviate import WeaviateVectorStore
 from llama_index.core.response.pprint_utils import pprint_source_node
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.anthropic import Anthropic
-import os
 from termcolor import cprint
+import os
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 

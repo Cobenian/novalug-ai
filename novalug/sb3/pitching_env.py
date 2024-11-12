@@ -1,8 +1,11 @@
-import gymnasium as gym
 import numpy as np
+import gymnasium as gym
 from gymnasium import spaces
-import random
 from termcolor import cprint
+
+import random
+
+
 from novalug.baseball.baseball_rules import BaseballRules
 
 

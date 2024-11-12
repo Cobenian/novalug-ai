@@ -4,11 +4,11 @@ from llama_index.vector_stores.weaviate import WeaviateVectorStore
 from llama_index.core.response.pprint_utils import pprint_source_node
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.anthropic import Anthropic
-import os
-from termcolor import cprint
 from llama_index.core.tools import QueryEngineTool, FunctionTool
-import nest_asyncio
 import pandas as pd
+import nest_asyncio
+from termcolor import cprint
+import os
 
 
 from llama_index.core.agent import (
