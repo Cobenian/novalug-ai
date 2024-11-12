@@ -2,6 +2,8 @@ import os
 from anthropic import Anthropic
 from termcolor import cprint
 
+# this is just a simple example of how to use the anthropic library
+
 client = Anthropic(
     # This is the default and can be omitted
     api_key=os.environ.get("ANTHROPIC_API_KEY"),
@@ -34,7 +36,5 @@ if __name__ == "__main__":
         # Append Claude's response to the conversation history
         conversation_history.append({"role": "assistant", "content": response.content})
 
-        # print(f"Claude's response: {response['content']}")
-        # print(f"Claude's response: {response}")
         for line in response.content:
             cprint(line.text, "blue")

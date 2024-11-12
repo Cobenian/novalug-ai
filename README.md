@@ -89,3 +89,35 @@ Agentic workflows offer an excellent balance of AI based decision making with so
 
 > [!TIP]
 > Do not make calls to LLM's that are too complicated or you will get results that will not be easy to handle. We recommend having the AI do things like choosing from a small discrete set of options or having the API parse human provided text to provide text that is simpler for models to understand.
+
+## AI generated game recaps
+
+Now that our game is over, let's look at some real world AI generated game recaps.
+
+## Summarize a game recap
+
+```bash
+poetry run summarize-game-recap
+```
+
+## Was the game recap positive or negative?
+
+```bash
+poetry run game-sentiment
+```
+
+## Let's chat about our season
+
+```bash
+poetry run chat-about-the-season
+```
+
+```bash
+poetry run python novalug/wvt/query.py
+```
+
+## Some more chat with agents
+
+```bash
+poetry run python novalug/li/agents.py
+```

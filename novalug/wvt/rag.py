@@ -7,67 +7,74 @@ from sentence_transformers import SentenceTransformer
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.anthropic import Anthropic
 import os
-from weaviate.classes.config import Configure, Property, DataType
+from termcolor import cprint
 
 # Set the environment variable to disable parallelism in tokenizers
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
-with weaviate.connect_to_local() as client:
+def run_season_chat():
 
-    # load the blogs in using the reader
-    game_recaps = SimpleDirectoryReader("./data/game_recaps").load_data()
+    with weaviate.connect_to_local() as client:
 
-    # Chunk up the game recaps into nodes
-    parser = SimpleFileNodeParser.from_defaults()
-    nodes = parser.get_nodes_from_documents(game_recaps)
+        # load the blogs in using the reader
+        game_recaps = SimpleDirectoryReader("./data/game_recaps").load_data()
 
-    # Initialize the Sentence Transformer model
-    model = SentenceTransformer("all-MiniLM-L6-v2")
+        # Chunk up the game recaps into nodes
+        parser = SimpleFileNodeParser.from_defaults()
+        nodes = parser.get_nodes_from_documents(game_recaps)
 
-    # Generate embeddings for each node
-    for node in nodes:
-        node.embedding = model.encode(node.text)
+        # Initialize the Sentence Transformer model
+        model = SentenceTransformer("all-MiniLM-L6-v2")
 
-    # chunk up the blog posts into nodes
-    # parser = SimpleFileNodeParser.from_defaults(chunk_size=1024, chunk_overlap=20)
-    # nodes = parser.get_nodes_from_documents(game_recaps)
+        # Generate embeddings for each node
+        for node in nodes:
+            node.embedding = model.encode(node.text)
 
-    # construct vector store
-    vector_store = WeaviateVectorStore(
-        weaviate_client=client,
-        index_name="GameRecapIdx",
-        text_key="content",
-        # vectorizer_config=Configure.Vectorizer.text2vec_transformers(),
-    )
+        # construct vector store
+        vector_store = WeaviateVectorStore(
+            weaviate_client=client,
+            index_name="GameRecapIdx",
+            text_key="content",
+        )
 
-    # setting up the storage for the embeddings
-    storage_context = StorageContext.from_defaults(vector_store=vector_store)
+        # setting up the storage for the embeddings
+        storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
-    embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
+        embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
 
-    # set up the index
-    index = VectorStoreIndex(
-        nodes, storage_context=storage_context, embed_model=embed_model
-    )
-    # index = VectorStoreIndex(nodes, storage_context = storage_context)
+        # set up the index
+        index = VectorStoreIndex(
+            nodes, storage_context=storage_context, embed_model=embed_model
+        )
 
-    query_engine = index.as_query_engine(llm=Anthropic())
-    response = query_engine.query("Which teams did the Thundercats play against?")
-    print(response)
-    print("")
+        query_engine = index.as_query_engine(llm=Anthropic())
+        q = "Which teams did the Thundercats play against?"
+        cprint(f"Q: {q}", "blue")
+        response = query_engine.query(q)
+        cprint(response, "yellow")
+        print("")
 
-    chat_engine = index.as_chat_engine(llm=Anthropic())
-    response = chat_engine.chat(
-        "Who had the most hits for the Thundercats in each game?"
-    )
-    print(response)
-    print("")
+        chat_engine = index.as_chat_engine(llm=Anthropic())
 
-    response = chat_engine.chat("Who the Thundercats play next?")
-    print(response)
-    print("")
+        q = "Who had the most hits for the Thundercats in each game?"
+        cprint(f"Q: {q}", "blue")
+        response = chat_engine.chat(q)
+        cprint(response, "yellow")
+        print("")
 
-    response = chat_engine.chat("When do they play them?")
-    print(response)
-    print("")
+        q = "Who the Thundercats play next?"
+        cprint(f"Q: {q}", "blue")
+        response = chat_engine.chat(q)
+        cprint(response, "yellow")
+        print("")
+
+        q = "When do they play them?"
+        cprint(f"Q: {q}", "blue")
+        response = chat_engine.chat(q)
+        cprint(response, "yellow")
+        print("")
+
+
+def main():
+    run_season_chat()

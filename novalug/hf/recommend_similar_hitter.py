@@ -3,6 +3,7 @@ import numpy as np
 import torch
 from sentence_transformers import SentenceTransformer, util
 from termcolor import cprint
+import os
 
 
 def save_cosine_similarity_matrix(cosine_sim_df, cosine_similarity_matrix_filename):
@@ -76,8 +77,10 @@ def find_similar_hitters(
     cosine_sim_df, hitting_stats_df, player_name, number_of_players
 ):
     # Find the row index of the player in the dataframe
-    # Find the row index of the player 'Ryan' in the 'BATTER' column
-    row_indices = hitting_stats_df.index[hitting_stats_df["BATTER"] == "Ryan"].tolist()
+    # Find the row index of the player_name in the 'BATTER' column
+    row_indices = hitting_stats_df.index[
+        hitting_stats_df["BATTER"] == player_name
+    ].tolist()
     row_index = row_indices[0]
 
     # print(f"Row index of player {player_name}: {row_index}")
@@ -87,27 +90,33 @@ def find_similar_hitters(
         "yellow",
     )
 
-    # return the most similar hitter
+    # return the most similar hitters
     # convert all the rows in top_n_similar_rows to ints
     return [int(i) for i in top_n_similar_rows]
-
-    # return int(top_n_similar_rows[0])
 
 
 def main():
     hitting_data_filename = "data/stats/hitting.csv"
     cosine_similarity_matrix_filename = "data/similarity/cosine_similarity_matrix.csv"
+    player_name = "Ryan"
+    number_of_players = 5
 
     # Load the CSV file into a DataFrame
     hitting_stats_df = pd.read_csv(hitting_data_filename)
-    # really we would want to remove the starters here...
+    # NOTE: really we would want to remove the starters here...
 
-    # cosine_sim_df = create_similarity_embeddings(hitting_data_filename, hitting_stats_df)
-    # save_cosine_similarity_matrix(cosine_sim_df, cosine_similarity_matrix_filename)
+    # check if the cosine_similarity_matrix_filename file exists
+    # if not, create the cosine similarity matrix and save it to a file
+    # NOTE: if you need to update the similarity matrix, delete the file and run the script again
+    if os.path.exists(cosine_similarity_matrix_filename):
+        pass
+    else:
+        cosine_sim_df = create_similarity_embeddings(
+            hitting_data_filename, hitting_stats_df
+        )
+        save_cosine_similarity_matrix(cosine_sim_df, cosine_similarity_matrix_filename)
 
     cosine_sim_df = load_cosine_similarity_matrix(cosine_similarity_matrix_filename)
-    player_name = "Ryan"
-    number_of_players = 5
     similar_player_indexes = find_similar_hitters(
         cosine_sim_df, hitting_stats_df, player_name, number_of_players
     )

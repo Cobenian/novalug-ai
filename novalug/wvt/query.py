@@ -15,8 +15,6 @@ with weaviate.connect_to_local() as client:
         weaviate_client=client, index_name="GameRecapIdx", text_key="content"
     )
 
-    storage_context = StorageContext.from_defaults(vector_store=vector_store)
-
     embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
 
     index = VectorStoreIndex.from_vector_store(vector_store, embed_model=embed_model)

@@ -20,9 +20,9 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 def scores_data():
-    filename = "data/schedule/schedule_with_scores.csv"
     # read in the file as a pandas dataframe
-    df = pd.read_csv(filename)
+    scores_filename = "data/schedule/schedule_with_scores.csv"
+    df = pd.read_csv(scores_filename)
     return df
 
 
@@ -31,8 +31,6 @@ with weaviate.connect_to_local() as client:
     vector_store = WeaviateVectorStore(
         weaviate_client=client, index_name="GameRecapIdx", text_key="content"
     )
-
-    storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
     embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
 
@@ -66,5 +64,4 @@ with weaviate.connect_to_local() as client:
     nest_asyncio.apply()
 
     response = agent.chat("What was the closest game the Thundercats played?")
-
     print(response)
