@@ -1,3 +1,13 @@
+## NOTE
+
+Some of these instructions are out of date as I deleted some of the test files in the repository.
+
+The purpose of this is to document the steps taken to add the dependencies. 
+
+You should use poetry to install the dependencies.
+
+You should follow the instructions in the README file to run the demo.
+
 ## Setup
 
 ```bash
@@ -89,7 +99,6 @@ poetry run baseball-entrypoint
 
 ```bash
 poetry add pandas
-poetry run python novalug/xgb/regression_xgboost.py
 
 poetry run python novalug/xgb/hitting.py
 ```

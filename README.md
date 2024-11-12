@@ -175,6 +175,10 @@ Now that our game is over, let's look at some real world AI generated game recap
 
 `GameChanger` (a commercial product) provides a real world example of using AI to summarize baseball games into a game recap article. The text of the game recaps was copied into the `data/game_recaps` folder (with names modified).
 
+### What did we learn?
+
+That I like baseball. :)
+
 ## Summarize a game recap
 
 ```bash
