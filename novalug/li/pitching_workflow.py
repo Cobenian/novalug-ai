@@ -58,7 +58,7 @@ class ChoosePitcherEvent(Event):
     game_state: GameState
 
 
-class ThrowAPitchEvent(Event):
+class PickPitchToThrowEvent(Event):
     game_state: GameState
 
 
@@ -68,19 +68,19 @@ class PitchingFlow(Workflow):
     @step
     async def start_game(self, ev: StartEvent) -> ChoosePitcherEvent:
         game_state = ev.game_state
-
+        cprint("Starting the game, we need to choose the starting pitcher", "yellow")
         return ChoosePitcherEvent(game_state=game_state)
 
     @step
     async def choose_available_pitcher(
         self, ev: ChoosePitcherEvent
-    ) -> ThrowAPitchEvent | GameOverEvent:
+    ) -> PickPitchToThrowEvent | GameOverEvent:
         game_state = ev.game_state
 
         pitchers = game_state.get_remaining_pitchers()
 
         if len(pitchers) == 0:
-            cprint("No more pitchers available", "blue")
+            cprint("No more pitchers available, will forfeit the game", "blue")
             return GameOverEvent(game_state=game_state)
 
         # Format the list of pitchers into a string
@@ -112,10 +112,12 @@ class PitchingFlow(Workflow):
         game_state.set_pitcher_skills(pitcher_skills)
         game_state.set_remaining_pitchers(remaining_pitchers)
 
-        return ThrowAPitchEvent(game_state=game_state)
+        return PickPitchToThrowEvent(game_state=game_state)
 
     @step
-    async def throw_a_pitch(self, ev: ThrowAPitchEvent) -> InputRequiredEvent:
+    async def decide_which_pitch_to_throw(
+        self, ev: PickPitchToThrowEvent
+    ) -> InputRequiredEvent:
         game_state = ev.game_state
 
         env = PitchingEnv(game_state)
@@ -127,28 +129,33 @@ class PitchingFlow(Workflow):
         obs = env.get_obs()
         action, _states = model.predict(obs, deterministic=True)
         pitch = game_state.action_description(action)
-        cprint(f"INTEND TO THROW PITCH: {pitch}", "blue")
+        cprint(f"PITCH RELAYED TO THE PITCHER AND CATCHER: {pitch}", "blue")
 
         return InputRequiredEvent(
-            prefix="What happened after the pitch?", game_state=game_state
+            prefix="What happened as a result of the pitch?", game_state=game_state
         )
 
     @step
-    async def decide_if_should_change_pitchers(
+    async def update_game_state_based_on_pitch_result(
         self, ev: HumanResponseEvent
     ) -> ChangePitcherDecisionEvent | GameOverEvent:
         game_state = ev.game_state
         # cprint(ev.response, 'yellow')
 
-        game_state.print_full()
+        # game_state.print_full()
         description_of_the_play = ev.response
         prompt = f"You are to choose between one of the following outcomes based on the text description provided. You can only choose one of hit, out, ball, strike or game over. The description of the play was {description_of_the_play}. Resond with your reasoning. On the last line type only your choice with nothing else."
         response = await self.llm.acomplete(prompt)
         cprint(response, "yellow")
         response_text = response.text.strip()
         last_line = response_text.split("\n")[-1]
-        play = last_line.lower()
-        cprint(play, "blue")
+        play = last_line.strip().lower()
+        # cprint(play, "blue")
+        if play not in ["hit", "out", "ball", "strike", "game over"]:
+            cprint(
+                "Invalid play, must be one of hit, out, ball, strike, game over", "red"
+            )
+            return PickPitchToThrowEvent(game_state=game_state)
         if play in ["game over"]:
             return GameOverEvent(game_state=game_state)
         else:
@@ -163,9 +170,9 @@ class PitchingFlow(Workflow):
         return ChangePitcherDecisionEvent(game_state=game_state)
 
     @step
-    async def change_pitcher(
+    async def decide_if_we_should_change_pitcher(
         self, ev: ChangePitcherDecisionEvent
-    ) -> ChoosePitcherEvent | ThrowAPitchEvent:
+    ) -> ChoosePitcherEvent | PickPitchToThrowEvent:
         game_state = ev.game_state
         current_pitcher_stats = game_state.get_pitcher_stats()
         cprint(
@@ -173,7 +180,7 @@ class PitchingFlow(Workflow):
             "green",
         )
 
-        prompt = f"Pitchers should not throw less than 10 pitches. Pitchers should not throw more than 45 pitches. If the pitcher throws more than 50% balls you should pull them. If they do or if they give up 3 runs they should be pulled from the game. Given these current pitcher stats: {current_pitcher_stats}, should we change the pitcher? Provide an explanation of your reasoning. On the last line, answer with yes or no. Do not provide any additional information on the last line."
+        prompt = f"Pitchers must not throw less than 10 pitches. Pitchers should not throw more than 45 pitches. If the pitcher throws more than 50% balls after throwing 10 pitches you should pull them. If the pitcher gives up 3 runs they should be pulled from the game. Given these current pitcher stats: {current_pitcher_stats}, should we change the pitcher? Provide an explanation of your reasoning. On the last line, answer with yes or no. Do not provide any additional information on the last line."
         response = await self.llm.acomplete(prompt)
         cprint(response, "yellow")
         response_text = response.text.strip()
@@ -182,7 +189,7 @@ class PitchingFlow(Workflow):
         if should_change_pitcher:
             return ChoosePitcherEvent(game_state=game_state)
         else:
-            return ThrowAPitchEvent(game_state=game_state)
+            return PickPitchToThrowEvent(game_state=game_state)
 
     @step
     async def end_the_game(self, ev: GameOverEvent) -> StopEvent:
@@ -208,8 +215,8 @@ initial_game_state = GameState(
 initial_game_state.set_initial_values()
 
 
-async def main():
-    workflow = PitchingFlow(timeout=60, verbose=False)
+async def run_workflow():
+    workflow = PitchingFlow(timeout=None, verbose=False)
 
     handler = workflow.run(game_state=initial_game_state)
     async for event in handler.stream_events():
@@ -217,7 +224,7 @@ async def main():
             # here, we can handle human input however you want
             # this means using input(), websockets, accessing async state, etc.
             # here, we just use input()
-            response = input(event.prefix)
+            response = input(f"{event.prefix}\n")
             handler.ctx.send_event(
                 HumanResponseEvent(response=response, game_state=event.game_state)
             )
@@ -226,4 +233,5 @@ async def main():
     cprint(str(result), "red")
 
 
-asyncio.run(main())
+def main():
+    asyncio.run(run_workflow())
