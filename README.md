@@ -22,10 +22,10 @@ poetry run make-lineup
 
 ### What did we learn?
 
-`Gradient Boosting` is a machine learning technique that works well for make predictions from tabular data. 
+`Gradient Boosting` is a machine learning technique that works well for making predictions from tabular data. 
 
 > [!TIP]
-> Collect data that includes the values you would like to predict.
+> Collect data that includes the values you would like to predict. It is required for training your model.
 
 > [!TIP]
 > Be prepared to clean your data and normalize your data if necessary.
